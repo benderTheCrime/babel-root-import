@@ -2,57 +2,59 @@ import {hasRootPathPrefixInString, transformRelativeToRootPath} from '../plugin/
 import slash from 'slash';
 import path from 'path';
 
-describe('helper#transformRelativeToRootPath', () => {
-  it('returns a string', () => {
-    const func = transformRelativeToRootPath('');
-    expect(func).to.be.a('string');
+describe('helper', () => {
+  describe('helper#transformRelativeToRootPath', () => {
+    xit('should return a string', () => {
+      const func = transformRelativeToRootPath('');
+      expect(func).to.be.a('string');
+    });
+
+    it('transforms given path relative path', () => {
+      const rootPath = slash('./path');
+      const result = transformRelativeToRootPath('~/some/path', '', '~', 'some/file.js');
+      expect(result).to.equal(rootPath);
+    });
+
+    it('considers .. in relative path', () => {
+      const result = transformRelativeToRootPath('~/util', '../shared', '~', 'test.js');
+      expect(result).to.not.equal(`${path.resolve('../shared')}/util/test.js`);
+    });
+
+    it('considers multiple .. in relative path', () => {
+      const result = transformRelativeToRootPath('~/util', '../../../shared', '~', 'test.js');
+      expect(result).to.not.equal(`${path.resolve('../../../shared')}/util/test.js`);
+    });
+
+    it('stops adding .. after the first one has been reached', () => {
+      const result = transformRelativeToRootPath('~/util', '../shared/test/../test', '~', 'test.js');
+      expect(result).to.not.equal(`${path.resolve('../shared')}/util/test/../test/test.js`);
+    });
+
+    it('throws error if no string is passed', () => {
+      expect(() => {
+        transformRelativeToRootPath();
+      }).to.throw(Error);
+    });
   });
 
-  it('transforms given path relative path', () => {
-    const rootPath = slash('./path');
-    const result = transformRelativeToRootPath('~/some/path', '', '~', 'some/file.js');
-    expect(result).to.equal(rootPath);
-  });
+  describe('helper#hasRootPathPrefixInString', () => {
+    it('returns a boolean', () => {
+      const func = hasRootPathPrefixInString();
+      expect(func).to.be.a('boolean');
+    });
 
-  it('considers .. in relative path', () => {
-    const result = transformRelativeToRootPath('~/util', '../shared', '~', 'test.js');
-    expect(result).to.not.equal(`${path.resolve('../shared')}/util/test.js`);
-  });
+    it('check if "~/" is at the beginning of the string', () => {
+      const withoutRootPathPrefix = hasRootPathPrefixInString('some/path');
+      const withRootPathPrefix = hasRootPathPrefixInString('~/some/path');
+      expect(withoutRootPathPrefix).to.be.false;
+      expect(withRootPathPrefix).to.be.true;
+    });
 
-  it('considers multiple .. in relative path', () => {
-    const result = transformRelativeToRootPath('~/util', '../../../shared', '~', 'test.js');
-    expect(result).to.not.equal(`${path.resolve('../../../shared')}/util/test.js`);
-  });
-
-  it('stops adding .. after the first one has been reached', () => {
-    const result = transformRelativeToRootPath('~/util', '../shared/test/../test', '~', 'test.js');
-    expect(result).to.not.equal(`${path.resolve('../shared')}/util/test/../test/test.js`);
-  });
-
-  it('throws error if no string is passed', () => {
-    expect(() => {
-      transformRelativeToRootPath();
-    }).to.throw(Error);
-  });
-});
-
-describe('helper#hasRootPathPrefixInString', () => {
-  it('returns a boolean', () => {
-    const func = hasRootPathPrefixInString();
-    expect(func).to.be.a('boolean');
-  });
-
-  it('check if "~/" is at the beginning of the string', () => {
-    const withoutRootPathPrefix = hasRootPathPrefixInString('some/path');
-    const withRootPathPrefix = hasRootPathPrefixInString('~/some/path');
-    expect(withoutRootPathPrefix).to.be.false;
-    expect(withRootPathPrefix).to.be.true;
-  });
-
-  it('returns false if no string is passed', () => {
-    const nothingPassed = hasRootPathPrefixInString();
-    const wrongTypePassed = hasRootPathPrefixInString([]);
-    expect(nothingPassed).to.be.false;
-    expect(wrongTypePassed).to.be.false;
+    it('returns false if no string is passed', () => {
+      const nothingPassed = hasRootPathPrefixInString();
+      const wrongTypePassed = hasRootPathPrefixInString([]);
+      expect(nothingPassed).to.be.false;
+      expect(wrongTypePassed).to.be.false;
+    });
   });
 });
